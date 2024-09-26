@@ -332,15 +332,6 @@ public class ExternalStorageProvider extends FileSystemProvider {
             return false;
         }
 
-        // Get canonical(!) path. Note that this path will have neither leading nor training "/".
-        // This the root's path will be just an empty string.
-        final String path = getPathFromDocId(documentId);
-
-        // Block the root of the storage
-        if (path.isEmpty()) {
-            return true;
-        }
-
         // This shouldn't really make a difference, but just in case - let's block hidden
         // directories as well.
 
