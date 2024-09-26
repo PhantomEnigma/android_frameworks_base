@@ -304,13 +304,7 @@ public class ExternalStorageProvider extends FileSystemProvider {
      */
     @Override
     protected boolean shouldHideDocument(@NonNull String documentId) {
-        // Don't need to hide anything on USB drives.
-        if (isOnRemovableUsbStorage(documentId)) {
-            return false;
-        }
-
-        final String path = getPathFromDocId(documentId);
-        return PATTERN_RESTRICTED_ANDROID_SUBTREES.matcher(path).matches();
+        return false;
     }
 
     /**
@@ -347,17 +341,8 @@ public class ExternalStorageProvider extends FileSystemProvider {
             return true;
         }
 
-        // Block /Download/ and /Android/ folders from the tree.
-        if (equalIgnoringCase(path, Environment.DIRECTORY_DOWNLOADS) ||
-                equalIgnoringCase(path, Environment.DIRECTORY_ANDROID)) {
-            return true;
-        }
-
         // This shouldn't really make a difference, but just in case - let's block hidden
         // directories as well.
-        if (shouldHideDocument(documentId)) {
-            return true;
-        }
 
         return false;
     }
