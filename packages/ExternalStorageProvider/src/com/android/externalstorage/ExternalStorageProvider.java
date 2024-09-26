@@ -321,19 +321,6 @@ public class ExternalStorageProvider extends FileSystemProvider {
     @Override
     protected boolean shouldBlockDirectoryFromTree(@NonNull String documentId)
             throws FileNotFoundException {
-        final File dir = getFileForDocId(documentId, false);
-        // The file is null or it is not a directory
-        if (dir == null || !dir.isDirectory()) {
-            return false;
-        }
-
-        // Allow all directories on USB, including the root.
-        if (isOnRemovableUsbStorage(documentId)) {
-            return false;
-        }
-
-        // This shouldn't really make a difference, but just in case - let's block hidden
-        // directories as well.
 
         return false;
     }
