@@ -16988,10 +16988,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
 
             psr.setReportedForegroundServiceTypes(fgServiceTypes);
-            ProcessChangeItem item = mProcessList.enqueueProcessChangeItemLocked(
-                    proc.getPid(), proc.info.uid);
-            item.changes |= ProcessChangeItem.CHANGE_FOREGROUND_SERVICES;
-            item.foregroundServiceTypes = fgServiceTypes;
+            mProcessList.enqueueProcessChangeItemLocked(proc.getPid(), proc.info.uid,
+                    ProcessChangeItem.CHANGE_FOREGROUND_SERVICES, fgServiceTypes);
         }
         if (oomAdj) {
             updateOomAdjLocked(proc, OOM_ADJ_REASON_UI_VISIBILITY);
@@ -20896,7 +20894,13 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     @Override
     public boolean isThreeFingersSwipeActive() {
-        return mThreeFingersSwipeEnabled;
+        if (!mThreeFingersSwipeEnabled)
+            return false;
+        synchronized (this) {
+            return Settings.System.getIntForUser(mContext.getContentResolver(),
+                    Settings.System.THREE_FINGER_GESTURE_ACTIVE, 0,
+                    UserHandle.USER_CURRENT) == 1;
+        }
     }
 
     @Override
