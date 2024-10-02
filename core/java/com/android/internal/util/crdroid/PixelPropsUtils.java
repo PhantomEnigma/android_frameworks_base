@@ -31,6 +31,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONObject;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 /**
  * @hide
  */
@@ -473,20 +477,37 @@ public final class PixelPropsUtils {
     private static void spoofBuildGms() {
         if (!SystemProperties.getBoolean(SPOOF_PIXEL_PI, true))
             return;
-        // Alter build parameters to avoid hardware attestation enforcement
-        setPropValue("MANUFACTURER", "Google");
-        setPropValue("MODEL", "Pixel 6");
-        setPropValue("FINGERPRINT", "google/oriole_beta/oriole:15/AP41.240823.009/12329489:user/release-keys");
-        setPropValue("BRAND", "google");
-        setPropValue("PRODUCT", "oriole_beta");
-        setPropValue("DEVICE", "oriole");
-        setVersionFieldString("RELEASE", "15");
-        setPropValue("ID", "AP41.240823.009");
-        setVersionFieldString("INCREMENTAL", "12266677");
-        setPropValue("TYPE", "user");
-        setPropValue("TAGS", "release-keys");
-        setVersionFieldString("SECURITY_PATCH", "2024-09-05");
-        setVersionFieldInt("DEVICE_INITIAL_SDK_INT", 31);
+        try {
+            // Read the JSON file
+            FileInputStream fis = new FileInputStream("/system/etc/build_props.json");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+            StringBuilder jsonBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonBuilder.append(line);
+            }
+            reader.close();
+
+        // Parse the JSON
+            JSONObject jsonObject = new JSONObject(jsonBuilder.toString());
+
+        // Set properties from JSON
+            setPropValue("MANUFACTURER", jsonObject.getString("MANUFACTURER"));
+            setPropValue("MODEL", jsonObject.getString("MODEL"));
+            setPropValue("FINGERPRINT", jsonObject.getString("FINGERPRINT"));
+            setPropValue("BRAND", jsonObject.getString("BRAND"));
+            setPropValue("PRODUCT", jsonObject.getString("PRODUCT"));
+            setPropValue("DEVICE", jsonObject.getString("DEVICE"));
+            setPropValue("VERSION.RELEASE", jsonObject.getJSONObject("VERSION").getString("RELEASE"));
+            setPropValue("VERSION.INCREMENTAL", jsonObject.getJSONObject("VERSION").getString("INCREMENTAL"));
+            setPropValue("VERSION.SECURITY_PATCH", jsonObject.getJSONObject("VERSION").getString("SECURITY_PATCH"));
+            setPropValue("VERSION.DEVICE_INITIAL_SDK_INT", jsonObject.getJSONObject("VERSION").getString("DEVICE_INITIAL_SDK_INT"));
+            setPropValue("TYPE", jsonObject.getString("TYPE"));
+            setPropValue("TAGS", jsonObject.getString("TAGS"));
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to spoof build GMS properties", e);
+        }
     }
 
     private static boolean isCallerSafetyNet() {
